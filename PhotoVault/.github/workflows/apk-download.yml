@@ -4,42 +4,128 @@ name: Build and Upload APK
 on:
   push:
     branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    
+    # Permissions needed for creating releases
+    permissions:
+      contents: write
+      artifacts: write
 
     steps:
-    # 1. Checkout your code
+    # Step 1: Checkout the repository
     - name: Checkout Repository
       uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
 
-    # 2. Set up JDK
-    - name: Set up JDK
+    # Step 2: Set up JDK 17 (required for modern Android development)
+    - name: Set up JDK 17
       uses: actions/setup-java@v3
       with:
-        distribution: temurin
+        distribution: 'temurin'
         java-version: '17'
+        cache: gradle
 
-    # 3. Set up Android SDK
+    # Step 3: Set up Android SDK tools
     - name: Set up Android SDK
       uses: android-actions/setup-android@v2
 
-    # 4. Build release APK (skip if APK already exists from previous steps)
-    - name: Build Release APK
-      run: ./gradlew assembleRelease
+    # Step 4: Make gradlew executable
+    - name: Make gradlew Executable
+      run: chmod +x ./gradlew
 
-    # 5. Upload APK as a downloadable artifact
-    - name: Upload APK Artifact
+    # Step 5: Build debug APK (quick validation)
+    - name: Build Debug APK
+      run: ./gradlew assembleDebug --stacktrace
+      continue-on-error: false
+
+    # Step 6: Build release APK (optimized, signed, production-ready)
+    - name: Build Release APK
+      run: ./gradlew assembleRelease --stacktrace
+      continue-on-error: false
+
+    # Step 7: Upload debug APK as artifact (for testing)
+    - name: Upload Debug APK Artifact
       uses: actions/upload-artifact@v3
       with:
-        name: PhotoVault-APK
-        path: app/build/outputs/apk/release/app-release.apk
+        name: PhotoVault-Debug-APK
+        path: app/build/outputs/apk/debug/app-debug.apk
+        retention-days: 7
 
-    # 6. Optional: Create GitHub Release and attach APK
+    # Step 8: Upload release APK as artifact (production-ready)
+    - name: Upload Release APK Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: PhotoVault-Release-APK
+        path: app/build/outputs/apk/release/app-release.apk
+        retention-days: 30
+
+    # Step 9: Get app version for release naming
+    - name: Get App Version
+      id: version
+      run: |
+        VERSION=$(grep 'versionName' app/build.gradle | grep -oP '\d+\.\d+\.\d+' | head -1)
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "App Version: $VERSION"
+
+    # Step 10: Create GitHub Release with APK attached
     - name: Create GitHub Release
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       uses: softprops/action-gh-release@v1
       with:
-        files: app/build/outputs/apk/release/app-release.apk
+        tag_name: v${{ steps.version.outputs.version }}-${{ github.run_number }}
+        name: PhotoVault Release v${{ steps.version.outputs.version }}
+        body: |
+          # PhotoVault Release v${{ steps.version.outputs.version }}
+          
+          ## 📱 What's Included
+          - **Fully Offline**: Zero internet required after installation
+          - **Photo Editing**: Professional tools (Exposure, Curves, HSL, Retouch, Transform)
+          - **Media Players**: Audio and video playback with controls
+          - **Secure Vault**: AES-256 encrypted file storage
+          - **Offline Sharing**: QR codes, Bluetooth, Xender, local links
+          - **File Management**: Browse, analyze, detect duplicates
+          
+          ## 🔧 Features
+          ✅ Non-destructive photo editing
+          ✅ Biometric authentication
+          ✅ Automation rules engine
+          ✅ Persistent local database
+          ✅ Material Design 3 UI
+          ✅ Jetpack Compose framework
+          
+          ## 📥 Installation
+          1. Download `app-release.apk`
+          2. Enable "Unknown Sources" in Settings
+          3. Install and launch PhotoVault
+          4. Grant storage permissions
+          5. Start using all features offline!
+          
+          ## 🎯 System Requirements
+          - Android 8.0+ (API 26+)
+          - 200MB storage space
+          - 2GB+ RAM recommended
+          
+          Build: ${{ github.run_number }} | Commit: ${{ github.sha }}
+        files: |
+          app/build/outputs/apk/release/app-release.apk
+          app/build/outputs/apk/debug/app-debug.apk
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    # Step 11: Notify on build failure
+    - name: Build Status
+      if: always()
+      run: |
+        if [ "${{ job.status }}" == "success" ]; then
+          echo "✅ Build successful! APK ready for download."
+        else
+          echo "❌ Build failed. Check logs for details."
+          exit 1
+        fi
+

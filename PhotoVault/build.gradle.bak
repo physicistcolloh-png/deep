@@ -1,0 +1,13 @@
+// Simple root build.gradle for PhotoVault
+// Compatible with Gradle 7.6.1
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+tasks.register('clean', Delete) {
+    delete rootProject.buildDir
+}

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PhotoVault</string>
+    <string name="app_description">Offline File &amp; Photo Editor</string>
+    
+    <!-- Home Screen -->
+    <string name="home_title">PhotoVault</string>
+    <string name="browse_files">Browse Files</string>
+    <string name="audio_player">Audio Player</string>
+    <string name="video_player">Video Player</string>
+    <string name="security_vault">Security Vault</string>
+    <string name="share_files">Share Files</string>
+    <string name="settings">Settings</string>
+    
+    <!-- File Browser -->
+    <string name="file_browser">File Browser</string>
+    <string name="browse_and_manage">Browse and manage files locally</string>
+    <string name="back">Back</string>
+    
+    <!-- Editor -->
+    <string name="photo_editor">Photo Editor</string>
+    <string name="edit_tools">Edit tools: Exposure, Curves, HSL, Crop, Perspective, Retouch</string>
+    
+    <!-- Audio -->
+    <string name="play_audio">Play audio files</string>
+    <string name="audio_metadata">View metadata, organize by artist/album</string>
+    
+    <!-- Video -->
+    <string name="play_videos">Play videos with full offline support</string>
+    
+    <!-- Vault -->
+    <string name="vault_title">Security Vault</string>
+    <string name="vault_description">Encrypted storage with biometric lock</string>
+    
+    <!-- Share -->
+    <string name="offline_sharing">Offline Sharing</string>
+    <string name="share_via_qr">Share via QR Code</string>
+    <string name="share_via_bluetooth">Share via Bluetooth</string>
+    <string name="share_via_xender">Share via Xender</string>
+    <string name="generate_link">Generate Share Link</string>
+    
+    <!-- Settings -->
+    <string name="auto_backup">Auto Backup</string>
+    <string name="encryption_enabled">Encryption Enabled</string>
+    <string name="biometric_lock">Biometric Lock</string>
+    <string name="theme_mode">Theme Mode</string>
+    <string name="show_hidden_files">Show Hidden Files</string>
+    <string name="sort_order">Sort Order</string>
+</resources>
